@@ -36,7 +36,9 @@ jobs:
           uname -a
           echo ::set-output name=uname::$(uname -a)
     - name: Install Dependencies
-      run: sudo apt-get install -q -y libncursesw5-dev libhwloc-dev libnl-3-dev libnl-genl-3-dev libsensors4-dev libcap-dev make pkg-config
+      run: |
+          uname -a
+          sudo apt-get install -q -y libncursesw5-dev libhwloc-dev libnl-3-dev libnl-genl-3-dev libsensors4-dev libcap-dev make pkg-config
     - name: Bootstrap
       run: ./autogen.sh
     - name: Configure
