@@ -9,16 +9,21 @@ env:
 
 jobs:
   build-ubuntu-arch-matrix-full-featured-gcc:
-    runs-on: ubuntu-22.04
-    name: Build on ubuntu22.04 s390x
+    runs-on: ubuntu-20.04
+    name: Build on ${{ matrix.distro }} ${{ matrix.arch }}
+    strategy:
+      matrix:
+        include:
+          - arch: s390x
+            distro: ubuntu20.04
     steps:
-    - uses: actions/checkout@v4
-    - uses: uraimo/run-on-arch-action@v3
+    - uses: actions/checkout@v2
+    - uses: uraimo/run-on-arch-action@v2.0.8
       name: Configure and Build
       id: arch-matrix-gcc
       with:
-        arch: s390x
-        distro: ubuntu22.04
+        arch: ${{ matrix.arch }}
+        distro: ${{ matrix.distro }}
         githubToken: ${{ github.token }}
         shell: /bin/bash
         install: |
@@ -33,7 +38,7 @@ jobs:
           ./configure --enable-werror --enable-openvz --enable-vserver --enable-ancient-vserver --enable-unicode --enable-hwloc --enable-setuid --enable-delayacct --with-sensors --with-capabilities
           make -k
           make distcheck DISTCHECK_CONFIGURE_FLAGS='--enable-werror --enable-openvz --enable-vserver --enable-ancient-vserver --enable-unicode --enable-hwloc --enable-setuid --enable-delayacct --with-sensors --with-capabilities'
-          
+
   lint-whitespace:
     runs-on: ubuntu-latest
     steps:
