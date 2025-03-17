@@ -25,10 +25,11 @@ jobs:
       run: |
           docker run --rm -t --platform linux/s390x \
             -v ${{ github.workspace }}:/repo \
-            s390x/ubuntu:latest bash -c "cd /repo && ./autogen.sh &&
-          ./configure --enable-werror --enable-openvz --enable-vserver --enable-ancient-vserver --enable-unicode --enable-hwloc --enable-setuid --enable-delayacct --with-sensors --with-capabilities &&
-          make -k &&
-          make distcheck DISTCHECK_CONFIGURE_FLAGS='--enable-werror --enable-openvz --enable-vserver --enable-ancient-vserver --enable-unicode --enable-hwloc --enable-setuid --enable-delayacct --with-sensors --with-capabilities'"
+            s390x/ubuntu:latest bash -c "apt-get -q -y update && apt-get install -q -y libncursesw5-dev libhwloc-dev libnl-3-dev libnl-genl-3-dev libsensors4-dev libcap-dev make pkg-config && 
+            cd /repo && ./autogen.sh &&
+            ./configure --enable-werror --enable-openvz --enable-vserver --enable-ancient-vserver --enable-unicode --enable-hwloc --enable-setuid --enable-delayacct --with-sensors --with-capabilities &&
+            make -k &&
+            make distcheck DISTCHECK_CONFIGURE_FLAGS='--enable-werror --enable-openvz --enable-vserver --enable-ancient-vserver --enable-unicode --enable-hwloc --enable-setuid --enable-delayacct --with-sensors --with-capabilities'"
 
   lint-whitespace:
     runs-on: ubuntu-latest
