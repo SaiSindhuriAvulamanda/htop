@@ -13,6 +13,7 @@ jobs:
     name: Build on ${{ matrix.distro }} ${{ matrix.arch }}
     strategy:
       matrix:
+        arch: [s390x]
         include:
           - arch: s390x
             distro: ubuntu22.04
@@ -23,7 +24,7 @@ jobs:
            platforms: s390x
     - name: Use s390x Docker with QEMU
       run: |
-         docker run --rm -t --platform linux/s390x --cpu host -v ${{ github.workspace }}:/repo s390x/ubuntu:22.04 bash -c "apt-get -q -y update &&
+         docker run --rm -t --platform linux/s390x -v ${{ github.workspace }}:/repo s390x/ubuntu:22.04 bash -c "apt-get -q -y update &&
          apt-get install -q -y libncursesw5-dev libhwloc-dev libnl-3-dev libnl-genl-3-dev libsensors4-dev libcap-dev make pkg-config &&
          cd /repo && ./autogen.sh &&
          ./configure --enable-werror --enable-openvz --enable-vserver --enable-ancient-vserver --enable-unicode --enable-hwloc --enable-setuid --enable-delayacct --with-sensors --with-capabilities &&
