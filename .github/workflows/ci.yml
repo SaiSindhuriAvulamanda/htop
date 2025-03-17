@@ -22,14 +22,22 @@ jobs:
     - uses: docker/setup-qemu-action@v3
       with:
            platforms: s390x
-    - name: Use s390x Docker with QEMU
+    - name: Start s390x container
       run: |
-         docker run --rm -t --platform linux/s390x -v ${{ github.workspace }}:/repo s390x/ubuntu:22.04 bash -c "apt-get -q -y update &&
-         apt-get install -q -y libncursesw5-dev libhwloc-dev libnl-3-dev libnl-genl-3-dev libsensors4-dev libcap-dev make pkg-config &&
-         cd /repo && ./autogen.sh &&
-         ./configure --enable-werror --enable-openvz --enable-vserver --enable-ancient-vserver --enable-unicode --enable-hwloc --enable-setuid --enable-delayacct --with-sensors --with-capabilities &&
-         make -k &&
-         make distcheck DISTCHECK_CONFIGURE_FLAGS='--enable-werror --enable-openvz --enable-vserver --enable-ancient-vserver --enable-unicode --enable-hwloc --enable-setuid --enable-delayacct --with-sensors --with-capabilities'"
+          container_id=$(docker run -d -t --platform linux/s390x -v ${{ github.workspace }}:/repo s390x/ubuntu:22.04 bash)
+          echo "CONTAINER_ID=$container_id" >> $GITHUB_ENV
+    - name: Install Dependencies
+      run: |
+          docker exec $CONTAINER_ID uname -a
+          docker exec $CONTAINER_ID sudo apt-get install -q -y libncursesw5-dev libhwloc-dev libnl-3-dev libnl-genl-3-dev libsensors4-dev libcap-dev make pkg-config
+    - name: Bootstrap
+      run: docker exec $CONTAINER_ID ./autogen.sh
+    - name: Configure
+      run: docker exec $CONTAINER_ID ./configure --enable-werror --enable-openvz --enable-vserver --enable-ancient-vserver --enable-unicode --enable-hwloc --enable-setuid --enable-delayacct --with-sensors --with-capabilities
+    - name: Build
+      run: |
+          docker exec $CONTAINER_ID make -k
+          docker exec $CONTAINER_ID make distcheck DISTCHECK_CONFIGURE_FLAGS='--enable-werror --enable-openvz --enable-vserver --enable-ancient-vserver --enable-unicode --enable-hwloc --enable-setuid --enable-delayacct --with-sensors --with-capabilities'
 
   lint-whitespace:
     runs-on: ubuntu-latest
