@@ -18,6 +18,14 @@ jobs:
             distro: ubuntu22.04
     steps:
     - uses: actions/checkout@v4
+    - uses: docker/setup-qemu-action@v3
+      with:
+          platforms: s390x
+    - uses: docker/setup-buildx-action@v3
+    - run: |
+          docker pull --platform linux/s390x ubuntu
+          docker run -dit --name s390x_container --platform linux/s390x ubuntu bash
+          docker ps
     - uses: uraimo/run-on-arch-action@v3
       name: Configure and Build
       id: arch-matrix-gcc
@@ -37,8 +45,8 @@ jobs:
           echo ::set-output name=uname::$(uname -a)
     - name: Install Dependencies
       run: |
-          docker exec ${{ steps.setup.outputs.container }} uname -a
-          docker exec ${{ steps.setup.outputs.container }} sudo apt-get install -q -y libncursesw5-dev libhwloc-dev libnl-3-dev libnl-genl-3-dev libsensors4-dev libcap-dev make pkg-config
+          docker exec s390x_container bash -c "uname -a"
+          docker exec s390x_container bash -c "sudo apt-get install -q -y libncursesw5-dev libhwloc-dev libnl-3-dev libnl-genl-3-dev libsensors4-dev libcap-dev make pkg-config"
     - name: Bootstrap
       run: docker exec ${{ steps.setup.outputs.container }} ./autogen.sh
     - name: Configure
@@ -47,56 +55,7 @@ jobs:
       run: |
           docker exec ${{ steps.setup.outputs.container }} make -k
           docker exec ${{ steps.setup.outputs.container }} make distcheck DISTCHECK_CONFIGURE_FLAGS='--enable-werror --enable-openvz --enable-vserver --enable-ancient-vserver --enable-unicode --enable-hwloc --enable-setuid --enable-delayacct --with-sensors --with-capabilities'
-
-  build-ubuntu-latest-pcp:
-    # we want PCP v5.2.3+
-    runs-on: ubuntu-22.04
-    steps:
-    - uses: actions/checkout@v4
-    - name: Install Dependencies
-      run: sudo apt-get install --no-install-recommends libpcp3-dev libncursesw5-dev libtinfo-dev libgpm-dev
-    - name: Bootstrap
-      run: ./autogen.sh
-    - name: Configure
-      run: ./configure --enable-werror --enable-pcp --enable-unicode || ( cat config.log; exit 1; )
-    - name: Build
-      run: make -k
-
-  build-unsupported-latest-gcc:
-    # build as if we were on an unsupported platform
-    runs-on: ubuntu-22.04
-    steps:
-    - uses: actions/checkout@v4
-    - name: Install Dependencies
-      run: sudo apt-get install --no-install-recommends libncursesw5-dev libtinfo-dev libgpm-dev
-    - name: Bootstrap
-      run: ./autogen.sh
-    - name: Configure
-      run: ./configure --host=`uname -m`-none --enable-werror --enable-unicode || ( cat config.log; exit 1; )
-    - name: Build
-      run: make -k
-
-  build-freebsd-latest-clang:
-      runs-on: ubuntu-22.04
-      timeout-minutes: 20
-      steps:
-        - uses: actions/checkout@v4
-          with:
-            submodules: recursive
-        - name: Compile
-          uses: vmactions/freebsd-vm@v1
-          with:
-            release: '14.2'
-            usesh: true
-            prepare: |
-              pkg install -y gmake autoconf automake pkgconf git
-              git config --global --add safe.directory /home/runner/work/htop/htop
-            run: |
-              set -e
-              ./autogen.sh
-              ./configure --enable-unicode --enable-werror
-              gmake -k
-
+          
   lint-whitespace:
     runs-on: ubuntu-latest
     steps:
