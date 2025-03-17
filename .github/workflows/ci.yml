@@ -27,16 +27,15 @@ jobs:
           echo "CONTAINER_ID=$container_id" >> $GITHUB_ENV
     - name: Install Dependencies
       run: |
-          docker exec $CONTAINER_ID pwd && cd
-          docker exec $CONTAINER_ID apt-get -q -y update && apt-get install -q -y sudo && sudo apt-get install -q -y libncursesw5-dev libhwloc-dev libnl-3-dev libnl-genl-3-dev libsensors4-dev libcap-dev make pkg-config
+          docker exec $CONTAINER_ID bash -c "apt-get -q -y update && apt-get install -q -y libncursesw5-dev libhwloc-dev libnl-3-dev libnl-genl-3-dev libsensors4-dev libcap-dev make pkg-config"
     - name: Bootstrap
-      run: docker exec $CONTAINER_ID ./autogen.sh
+      run: docker exec $CONTAINER_ID bash -c "./autogen.sh"
     - name: Configure
-      run: docker exec $CONTAINER_ID ./configure --enable-werror --enable-openvz --enable-vserver --enable-ancient-vserver --enable-unicode --enable-hwloc --enable-setuid --enable-delayacct --with-sensors --with-capabilities
+      run: docker exec $CONTAINER_ID bash -c "./configure --enable-werror --enable-openvz --enable-vserver --enable-ancient-vserver --enable-unicode --enable-hwloc --enable-setuid --enable-delayacct --with-sensors --with-capabilities"
     - name: Build
       run: |
-          docker exec $CONTAINER_ID make -k
-          docker exec $CONTAINER_ID make distcheck DISTCHECK_CONFIGURE_FLAGS='--enable-werror --enable-openvz --enable-vserver --enable-ancient-vserver --enable-unicode --enable-hwloc --enable-setuid --enable-delayacct --with-sensors --with-capabilities'
+          docker exec $CONTAINER_ID bash -c "make -k"
+          docker exec $CONTAINER_ID bash -c "make distcheck DISTCHECK_CONFIGURE_FLAGS='--enable-werror --enable-openvz --enable-vserver --enable-ancient-vserver --enable-unicode --enable-hwloc --enable-setuid --enable-delayacct --with-sensors --with-capabilities'"
 
   lint-whitespace:
     runs-on: ubuntu-latest
