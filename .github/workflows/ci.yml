@@ -19,7 +19,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - uses: docker/setup-qemu-action@v3
-       with:
+      with:
            platforms: s390x
     - name: Use s390x Docker with QEMU
       run: |
