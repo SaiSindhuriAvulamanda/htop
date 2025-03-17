@@ -9,7 +9,7 @@ env:
 
 jobs:
   build-ubuntu-arch-matrix-full-featured-gcc:
-    runs-on: s390x/ubuntu-22.04
+    runs-on: s390x/ubuntu-latest
     name: Build on ${{ matrix.distro }} ${{ matrix.arch }}
     strategy:
       matrix:
