@@ -34,8 +34,8 @@ jobs:
           CFLAGS: -O3 -g -flto
           LDFLAGS: -O3 -g -flto
         run: |
-          ./autogen.sh &
-          ./configure --enable-werror --enable-openvz --enable-vserver --enable-ancient-vserver --enable-unicode --enable-hwloc --enable-setuid --enable-delayacct --with-sensors --with-capabilities &
+          ./autogen.sh
+          ./configure --enable-werror --enable-openvz --enable-vserver --enable-ancient-vserver --enable-unicode --enable-hwloc --enable-setuid --enable-delayacct --with-sensors --with-capabilities
           make -k &
           make distcheck DISTCHECK_CONFIGURE_FLAGS='--enable-werror --enable-openvz --enable-vserver --enable-ancient-vserver --enable-unicode --enable-hwloc --enable-setuid --enable-delayacct --with-sensors --with-capabilities' &
 
