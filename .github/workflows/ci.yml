@@ -92,7 +92,7 @@ jobs:
       run: make distcheck DISTCHECK_CONFIGURE_FLAGS='--enable-werror --enable-openvz --enable-vserver --enable-ancient-vserver --enable-unicode --enable-hwloc --enable-delayacct --enable-sensors --enable-capabilities'
 
   build-ubuntu-arch-matrix-full-featured-gcc:
-    runs-on: ubuntu-20.04
+    runs-on: ${{matrix.os}}
     name: Build on ${{ matrix.distro }} ${{ matrix.arch }}
     strategy:
       matrix:
