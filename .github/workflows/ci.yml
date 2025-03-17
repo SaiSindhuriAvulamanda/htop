@@ -18,6 +18,9 @@ jobs:
             distro: ubuntu22.04
     steps:
     - uses: actions/checkout@v4
+    - uses: docker/setup-qemu-action@v3
+       with:
+           platforms: s390x
     - name: Use s390x Docker with QEMU
       run: |
           docker run --rm -t --platform linux/s390x \
