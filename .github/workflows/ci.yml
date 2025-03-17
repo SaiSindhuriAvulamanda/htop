@@ -18,19 +18,22 @@ jobs:
             distro: ubuntu22.04
     steps:
     - uses: actions/checkout@v4
-    - uses: docker/setup-qemu-action@v3
-      with:
-          platforms: s390x
-    - name: Install s390x Dependencies
-      run: |
-          sudo apt update
-          sudo apt install -y qemu-user qemu-user-static binfmt-support
     - name: Install Dependencies
       run: |
-          qemu-s390x /bin/bash -c "uname -a"
-          qemu-s390x /bin/bash -c "apt-get install -q -y libncursesw5-dev libhwloc-dev libnl-3-dev libnl-genl-3-dev libsensors4-dev libcap-dev make pkg-config"
+          sudo apt update
+          sudo apt install -y qemu-user-static debootstrap
+    - name: Set Up s390x Environment
+      run: |
+          sudo debootstrap --arch=s390x focal /s390x-root http://ports.ubuntu.com/
+          sudo cp /usr/bin/qemu-s390x-static /s390x-root/usr/bin/
+          sudo mkdir -p /s390x-root/repo
+          sudo cp -r $GITHUB_WORKSPACE/* /s390x-root/repo/
+    - name: Install Dependencies
+      run: |
+          sudo chroot /s390x-root /bin/bash -c "uname -a"
+          sudo chroot /s390x-root /bin/bash -c "apt-get install -q -y libncursesw5-dev libhwloc-dev libnl-3-dev libnl-genl-3-dev libsensors4-dev libcap-dev make pkg-config"
     - name: Bootstrap
-      run: qemu-s390x /bin/bash -c "./autogen.sh"
+      run: sudo chroot /s390x-root /bin/bash -c "./autogen.sh"
     - name: Configure
       run: docker exec ${{ steps.setup.outputs.container }} ./configure --enable-werror --enable-openvz --enable-vserver --enable-ancient-vserver --enable-unicode --enable-hwloc --enable-setuid --enable-delayacct --with-sensors --with-capabilities
     - name: Build
