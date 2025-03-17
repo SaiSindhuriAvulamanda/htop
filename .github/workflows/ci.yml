@@ -18,26 +18,14 @@ jobs:
             distro: ubuntu22.04
     steps:
     - uses: actions/checkout@v4
-    - uses: uraimo/run-on-arch-action@v3
-      name: Configure and Build
-      id: arch-matrix-gcc
-      with:
-        arch: ${{ matrix.arch }}
-        distro: ${{ matrix.distro }}
-        githubToken: ${{ github.token }}
-        shell: /bin/bash
-        install: |
-          apt-get -q -y update
-          apt-get install -q -y libncursesw5-dev libhwloc-dev libnl-3-dev libnl-genl-3-dev libsensors4-dev libcap-dev make pkg-config
-        env: |
-          CPPFLAGS: -DGCC_PRINTF -DGCC_SCANF -D_FORTIFY_SOURCE=2
-          CFLAGS: -O3 -g -flto
-          LDFLAGS: -O3 -g -flto
-        run: |
-          ./autogen.sh
-          ./configure --enable-werror --enable-openvz --enable-vserver --enable-ancient-vserver --enable-unicode --enable-hwloc --enable-setuid --enable-delayacct --with-sensors --with-capabilities
-          stdbuf -oL  make -k &
-          stdbuf -oL  make distcheck DISTCHECK_CONFIGURE_FLAGS='--enable-werror --enable-openvz --enable-vserver --enable-ancient-vserver --enable-unicode --enable-hwloc --enable-setuid --enable-delayacct --with-sensors --with-capabilities' &
+    - name: Use s390x Docker with QEMU
+      run: |
+          docker run --rm -t --platform linux/s390x \
+            -v ${{ github.workspace }}:/repo \
+            s390x/ubuntu:latest bash -c "./autogen.sh &&
+          ./configure --enable-werror --enable-openvz --enable-vserver --enable-ancient-vserver --enable-unicode --enable-hwloc --enable-setuid --enable-delayacct --with-sensors --with-capabilities &&
+          make -k &&
+          make distcheck DISTCHECK_CONFIGURE_FLAGS='--enable-werror --enable-openvz --enable-vserver --enable-ancient-vserver --enable-unicode --enable-hwloc --enable-setuid --enable-delayacct --with-sensors --with-capabilities'"
 
   lint-whitespace:
     runs-on: ubuntu-latest
