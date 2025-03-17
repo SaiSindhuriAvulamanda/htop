@@ -9,7 +9,7 @@ env:
 
 jobs:
   build-ubuntu-arch-matrix-full-featured-gcc:
-    runs-on: ubuntu-22.04
+    runs-on: self-hosted
     name: Build on ${{ matrix.distro }} ${{ matrix.arch }}
     strategy:
       matrix:
@@ -20,26 +20,16 @@ jobs:
     - uses: actions/checkout@v4
     - name: Install Dependencies
       run: |
-          sudo apt update
-          sudo apt install -y qemu-user-static debootstrap
-    - name: Set Up s390x Environment
-      run: |
-          sudo debootstrap --arch=s390x focal /s390x-root http://ports.ubuntu.com/
-          sudo cp /usr/bin/qemu-s390x-static /s390x-root/usr/bin/
-          sudo mkdir -p /s390x-root/repo
-          sudo cp -r $GITHUB_WORKSPACE/* /s390x-root/repo/
-    - name: Install Dependencies
-      run: |
-          sudo chroot /s390x-root /bin/bash -c "uname -a"
-          sudo chroot /s390x-root /bin/bash -c "apt-get install -q -y libncursesw5-dev libhwloc-dev libnl-3-dev libnl-genl-3-dev libsensors4-dev libcap-dev make pkg-config"
+          uname -a
+          apt-get install -q -y libncursesw5-dev libhwloc-dev libnl-3-dev libnl-genl-3-dev libsensors4-dev libcap-dev make pkg-config
     - name: Bootstrap
-      run: sudo chroot /s390x-root /bin/bash -c "./autogen.sh"
+      run: ./autogen.sh
     - name: Configure
-      run: docker exec ${{ steps.setup.outputs.container }} ./configure --enable-werror --enable-openvz --enable-vserver --enable-ancient-vserver --enable-unicode --enable-hwloc --enable-setuid --enable-delayacct --with-sensors --with-capabilities
+      run: ./configure --enable-werror --enable-openvz --enable-vserver --enable-ancient-vserver --enable-unicode --enable-hwloc --enable-setuid --enable-delayacct --with-sensors --with-capabilities
     - name: Build
       run: |
-          docker exec ${{ steps.setup.outputs.container }} make -k
-          docker exec ${{ steps.setup.outputs.container }} make distcheck DISTCHECK_CONFIGURE_FLAGS='--enable-werror --enable-openvz --enable-vserver --enable-ancient-vserver --enable-unicode --enable-hwloc --enable-setuid --enable-delayacct --with-sensors --with-capabilities'
+          make -k
+          make distcheck DISTCHECK_CONFIGURE_FLAGS='--enable-werror --enable-openvz --enable-vserver --enable-ancient-vserver --enable-unicode --enable-hwloc --enable-setuid --enable-delayacct --with-sensors --with-capabilities'
           
   lint-whitespace:
     runs-on: ubuntu-latest
